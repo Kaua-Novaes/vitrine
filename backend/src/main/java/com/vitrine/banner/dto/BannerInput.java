@@ -21,7 +21,16 @@ public class BannerInput {
     private String mobileImageUrl;
 
     private String linkUrl;
-    private int displayOrder;
     @Builder.Default
-    private boolean active = true;
+    private Integer displayOrder = 0;
+    @Builder.Default
+    private Boolean active = true;
+
+    public int getDisplayOrder() {
+        return displayOrder != null ? displayOrder : 0;
+    }
+
+    public boolean isActive() {
+        return active == null || active;
+    }
 }

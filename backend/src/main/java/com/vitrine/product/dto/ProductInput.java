@@ -22,10 +22,24 @@ public class ProductInput {
 
     private String shortDescription;
     private String description;
-    private boolean featured;
-    private int displayOrder;
     @Builder.Default
-    private boolean active = true;
+    private Boolean featured = false;
+    @Builder.Default
+    private Integer displayOrder = 0;
+    @Builder.Default
+    private Boolean active = true;
     private List<UUID> categoryIds;
     private List<String> imageUrls;
+
+    public boolean isFeatured() {
+        return featured != null && featured;
+    }
+
+    public boolean isActive() {
+        return active == null || active;
+    }
+
+    public int getDisplayOrder() {
+        return displayOrder != null ? displayOrder : 0;
+    }
 }
