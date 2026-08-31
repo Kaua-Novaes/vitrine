@@ -74,12 +74,26 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
 
     @Override
     public Page<Product> findAllByTenantId(UUID tenantId, String search, Pageable pageable) {
-        return productJpaRepository.findAdminProducts(tenantId, search, pageable).map(ProductJpaEntity::toDomain);
+        if (search == null || search.trim().isEmpty()) {
+            return productJpaRepository.findAllByTenantId(tenantId, pageable).map(ProductJpaEntity::toDomain);
+        }
+        return productJpaRepository.searchAdminProducts(tenantId, search.trim(), pageable).map(ProductJpaEntity::toDomain);
     }
 
     @Override
     public Page<Product> findPublicProducts(UUID tenantId, String search, String categorySlug, Pageable pageable) {
-        return productJpaRepository.findPublicProducts(tenantId, search, categorySlug, pageable).map(ProductJpaEntity::toDomain);
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        boolean hasCategory = categorySlug != null && !categorySlug.trim().isEmpty();
+
+        if (hasSearch && hasCategory) {
+            return productJpaRepository.searchPublicProductsByCategory(tenantId, search.trim(), categorySlug.trim(), pageable).map(ProductJpaEntity::toDomain);
+        } else if (hasSearch) {
+            return productJpaRepository.searchPublicProducts(tenantId, search.trim(), pageable).map(ProductJpaEntity::toDomain);
+        } else if (hasCategory) {
+            return productJpaRepository.findPublicProductsByCategory(tenantId, categorySlug.trim(), pageable).map(ProductJpaEntity::toDomain);
+        } else {
+            return productJpaRepository.findAllByTenantIdAndActiveTrue(tenantId, pageable).map(ProductJpaEntity::toDomain);
+        }
     }
 
     @Override

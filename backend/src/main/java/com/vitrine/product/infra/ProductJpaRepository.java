@@ -22,14 +22,24 @@ public interface ProductJpaRepository extends JpaRepository<ProductJpaEntity, UU
 
     void deleteByIdAndTenantId(UUID id, UUID tenantId);
 
-    @Query("SELECT p FROM ProductJpaEntity p WHERE p.tenantId = :tenantId AND " +
-            "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<ProductJpaEntity> findAdminProducts(@Param("tenantId") UUID tenantId, @Param("search") String search, Pageable pageable);
+    Page<ProductJpaEntity> findAllByTenantId(UUID tenantId, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM ProductJpaEntity p LEFT JOIN p.categories c WHERE p.tenantId = :tenantId AND p.active = true AND " +
-            "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
-            "(:categorySlug IS NULL OR c.slug = :categorySlug)")
-    Page<ProductJpaEntity> findPublicProducts(@Param("tenantId") UUID tenantId, @Param("search") String search, @Param("categorySlug") String categorySlug, Pageable pageable);
+    @Query("SELECT p FROM ProductJpaEntity p WHERE p.tenantId = :tenantId AND " +
+            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<ProductJpaEntity> searchAdminProducts(@Param("tenantId") UUID tenantId, @Param("search") String search, Pageable pageable);
+
+    Page<ProductJpaEntity> findAllByTenantIdAndActiveTrue(UUID tenantId, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM ProductJpaEntity p JOIN p.categories c WHERE p.tenantId = :tenantId AND p.active = true AND c.slug = :categorySlug")
+    Page<ProductJpaEntity> findPublicProductsByCategory(@Param("tenantId") UUID tenantId, @Param("categorySlug") String categorySlug, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM ProductJpaEntity p WHERE p.tenantId = :tenantId AND p.active = true AND " +
+            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<ProductJpaEntity> searchPublicProducts(@Param("tenantId") UUID tenantId, @Param("search") String search, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM ProductJpaEntity p JOIN p.categories c WHERE p.tenantId = :tenantId AND p.active = true AND c.slug = :categorySlug AND " +
+            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<ProductJpaEntity> searchPublicProductsByCategory(@Param("tenantId") UUID tenantId, @Param("search") String search, @Param("categorySlug") String categorySlug, Pageable pageable);
 
     List<ProductJpaEntity> findTop10ByTenantIdAndActiveTrueAndFeaturedTrueOrderByDisplayOrderAsc(UUID tenantId);
 
