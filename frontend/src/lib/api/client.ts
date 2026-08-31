@@ -36,7 +36,7 @@ import {
   mockSuperAdminMetrics,
 } from "@/mocks/data";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK !== "false";
 
 export class ApiError extends Error {
