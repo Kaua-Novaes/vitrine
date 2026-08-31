@@ -1,0 +1,1109 @@
+openapi: 3.0.3
+info:
+  title: Plataforma de Vitrines Digitais API
+  description: API REST Multi-Tenant para Vitrines Digitais (Público e Painel Master).
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Base API Path
+
+paths:
+  /public/store:
+    get:
+      summary: Informações e configurações públicas da loja
+      tags:
+        - Public - Store
+      responses:
+        '200':
+          description: Detalhes da loja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorePublicResponse'
+
+  /public/home:
+    get:
+      summary: Composição dinâmica das seções da Home
+      tags:
+        - Public - Home
+      responses:
+        '200':
+          description: Seções configuradas da Home
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeSectionsResponse'
+
+  /public/banners:
+    get:
+      summary: Lista de banners ativos da loja
+      tags:
+        - Public - Banners
+      responses:
+        '200':
+          description: Lista de banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BannerResponse'
+
+  /public/categories:
+    get:
+      summary: Lista de categorias ativas da loja
+      tags:
+        - Public - Categories
+      responses:
+        '200':
+          description: Lista de categorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+
+  /public/categories/{slug}:
+    get:
+      summary: Detalhes de uma categoria pelo slug
+      tags:
+        - Public - Categories
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detalhes da categoria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /public/categories/{slug}/products:
+    get:
+      summary: Lista de produtos de uma categoria
+      tags:
+        - Public - Categories
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista paginada de produtos da categoria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPageResponse'
+
+  /public/products:
+    get:
+      summary: Catálogo geral de produtos com filtro e busca
+      tags:
+        - Public - Products
+      parameters:
+        - name: query
+          in: query
+          description: Busca por termo em nome ou descrição
+          schema:
+            type: string
+        - name: categorySlug
+          in: query
+          description: Filtrar por slug de categoria
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista paginada de produtos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPageResponse'
+
+  /public/products/{slug}:
+    get:
+      summary: Detalhes do produto pelo slug
+      tags:
+        - Public - Products
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detalhes do produto com imagens e relacionados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /public/testimonials:
+    get:
+      summary: Lista de depoimentos ativos da loja
+      tags:
+        - Public - Testimonials
+      responses:
+        '200':
+          description: Lista de depoimentos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestimonialResponse'
+
+  /admin/auth/login:
+    post:
+      summary: Autenticação de usuário admin/master
+      tags:
+        - Admin - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Token JWT e dados do usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /admin/auth/me:
+    get:
+      summary: Dados do usuário logado
+      tags:
+        - Admin - Auth
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil do usuário atual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /admin/settings:
+    get:
+      summary: Obter configurações da loja do tenant
+      tags:
+        - Admin - Settings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Configurações da loja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreSettingsResponse'
+    put:
+      summary: Atualizar configurações da loja
+      tags:
+        - Admin - Settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStoreSettingsRequest'
+      responses:
+        '200':
+          description: Configurações atualizadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreSettingsResponse'
+
+  /admin/categories:
+    get:
+      summary: Listar todas as categorias do tenant
+      tags:
+        - Admin - Categories
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de categorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+    post:
+      summary: Criar nova categoria
+      tags:
+        - Admin - Categories
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '201':
+          description: Categoria criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+
+  /admin/categories/{id}:
+    get:
+      summary: Obter categoria por ID
+      tags:
+        - Admin - Categories
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Categoria encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: Atualizar categoria
+      tags:
+        - Admin - Categories
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '200':
+          description: Categoria atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+    delete:
+      summary: Excluir categoria
+      tags:
+        - Admin - Categories
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Categoria excluída com sucesso
+
+  /admin/products:
+    get:
+      summary: Listar produtos do tenant no admin
+      tags:
+        - Admin - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista paginada de produtos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPageResponse'
+    post:
+      summary: Criar produto
+      tags:
+        - Admin - Products
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '201':
+          description: Produto criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+
+  /admin/products/{id}:
+    get:
+      summary: Obter produto por ID
+      tags:
+        - Admin - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Produto detalhado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: Atualizar produto
+      tags:
+        - Admin - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '200':
+          description: Produto atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+    delete:
+      summary: Excluir produto
+      tags:
+        - Admin - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Produto excluído
+
+  /admin/banners:
+    get:
+      summary: Listar banners do tenant
+      tags:
+        - Admin - Banners
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BannerResponse'
+    post:
+      summary: Criar banner
+      tags:
+        - Admin - Banners
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerInput'
+      responses:
+        '201':
+          description: Banner criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerResponse'
+
+  /admin/banners/{id}:
+    put:
+      summary: Atualizar banner
+      tags:
+        - Admin - Banners
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerInput'
+      responses:
+        '200':
+          description: Banner atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerResponse'
+    delete:
+      summary: Excluir banner
+      tags:
+        - Admin - Banners
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Banner excluído
+
+  /admin/testimonials:
+    get:
+      summary: Listar depoimentos do tenant
+      tags:
+        - Admin - Testimonials
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de depoimentos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestimonialResponse'
+    post:
+      summary: Criar depoimento
+      tags:
+        - Admin - Testimonials
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestimonialInput'
+      responses:
+        '201':
+          description: Depoimento criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestimonialResponse'
+
+  /admin/testimonials/{id}:
+    put:
+      summary: Atualizar depoimento
+      tags:
+        - Admin - Testimonials
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestimonialInput'
+      responses:
+        '200':
+          description: Depoimento atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestimonialResponse'
+    delete:
+      summary: Excluir depoimento
+      tags:
+        - Admin - Testimonials
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Depoimento excluído
+
+  /admin/media/upload:
+    post:
+      summary: Upload de imagem (WebP, PNG, JPEG, SVG)
+      tags:
+        - Admin - Media
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                folder:
+                  type: string
+                  enum: [logo, banners, categories, products]
+              required:
+                - file
+      responses:
+        '201':
+          description: Arquivo processado e armazenado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUploadResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    StorePublicResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        logoUrl:
+          type: string
+          nullable: true
+        primaryColor:
+          type: string
+          nullable: true
+        secondaryColor:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        textColor:
+          type: string
+          nullable: true
+        whatsappNumber:
+          type: string
+          nullable: true
+        whatsappMessageTemplate:
+          type: string
+          nullable: true
+
+    StoreSettingsResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        storeName:
+          type: string
+        slug:
+          type: string
+        logoUrl:
+          type: string
+          nullable: true
+        primaryColor:
+          type: string
+          nullable: true
+        secondaryColor:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        textColor:
+          type: string
+          nullable: true
+        whatsappNumber:
+          type: string
+          nullable: true
+        whatsappMessageTemplate:
+          type: string
+          nullable: true
+
+    UpdateStoreSettingsRequest:
+      type: object
+      properties:
+        storeName:
+          type: string
+        logoUrl:
+          type: string
+        primaryColor:
+          type: string
+        secondaryColor:
+          type: string
+        backgroundColor:
+          type: string
+        textColor:
+          type: string
+        whatsappNumber:
+          type: string
+        whatsappMessageTemplate:
+          type: string
+
+    HomeSectionsResponse:
+      type: object
+      properties:
+        banners:
+          type: array
+          items:
+            $ref: '#/components/schemas/BannerResponse'
+        featuredCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryResponse'
+        featuredProducts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummaryResponse'
+        testimonials:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestimonialResponse'
+        sectionsOrder:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [BANNER, CATEGORY_SHOWCASE, PRODUCT_SHOWCASE, TESTIMONIAL, CTA]
+              displayOrder:
+                type: integer
+              active:
+                type: boolean
+
+    BannerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        desktopImageUrl:
+          type: string
+        mobileImageUrl:
+          type: string
+        linkUrl:
+          type: string
+          nullable: true
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+
+    BannerInput:
+      type: object
+      required:
+        - title
+        - desktopImageUrl
+        - mobileImageUrl
+      properties:
+        title:
+          type: string
+        desktopImageUrl:
+          type: string
+        mobileImageUrl:
+          type: string
+        linkUrl:
+          type: string
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+
+    CategoryInput:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+
+    ProductSummaryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        shortDescription:
+          type: string
+          nullable: true
+        primaryImageUrl:
+          type: string
+          nullable: true
+        featured:
+          type: boolean
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+
+    ProductDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        shortDescription:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        featured:
+          type: boolean
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              imageUrl:
+                type: string
+              displayOrder:
+                type: integer
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryResponse'
+        relatedProducts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummaryResponse'
+
+    ProductInput:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        shortDescription:
+          type: string
+        description:
+          type: string
+        featured:
+          type: boolean
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        imageUrls:
+          type: array
+          items:
+            type: string
+
+    ProductPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummaryResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+
+    TestimonialResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        text:
+          type: string
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+
+    TestimonialInput:
+      type: object
+      required:
+        - name
+        - text
+      properties:
+        name:
+          type: string
+        text:
+          type: string
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+
+    MediaUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+        fileName:
+          type: string
+        size:
+          type: integer
+        mimeType:
+          type: string
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        user:
+          $ref: '#/components/schemas/UserResponse'
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          example: MASTER
+
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        timestamp:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+  responses:
+    NotFoundError:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnauthorizedError:
+      description: Não autenticado ou credenciais inválidas
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ForbiddenError:
+      description: Acesso não autorizado ao recurso do tenant
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
