@@ -17,6 +17,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: vitrine-backend
+    expose:
+      - "8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/vitrine_db
@@ -37,6 +39,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: vitrine-frontend
+    expose:
+      - "3000"
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_USE_MOCK: "false"
