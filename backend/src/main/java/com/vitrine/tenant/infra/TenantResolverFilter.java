@@ -54,15 +54,21 @@ public class TenantResolverFilter extends OncePerRequestFilter {
             return headerSlug.trim();
         }
 
-        // 2. Subdomínio extraído do Host (ex: grafica-modelo.plataforma.com.br)
+        // 2. Subdomínio extraído do Host (ex: grafica-modelo.vitrine.codecision.com.br)
         String host = request.getServerName();
         if (host != null && host.contains(".")) {
             String[] parts = host.split("\\.");
+            if (parts.length >= 4 && parts[1].equalsIgnoreCase("vitrine")) {
+                return parts[0].toLowerCase();
+            }
             if (parts.length >= 3 && !parts[0].equalsIgnoreCase("www") && !parts[0].equalsIgnoreCase("api")) {
+                if (parts[0].equalsIgnoreCase("vitrine")) {
+                    return "grafica-modelo";
+                }
                 return parts[0].toLowerCase();
             }
         }
 
-        return null;
+        return "grafica-modelo";
     }
 }

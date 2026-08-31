@@ -78,10 +78,29 @@ export const getAuthToken = (): string | null => {
   return authToken;
 };
 
+export const getTenantSlug = (): string => {
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    const parts = host.split(".");
+    // Exemplo: grafica-modelo.vitrine.codecision.com.br
+    if (parts.length >= 4 && parts[1] === "vitrine") {
+      return parts[0].toLowerCase();
+    }
+    // Exemplo: grafica-modelo.localhost ou grafica-modelo.codecision.com.br
+    if (
+      parts.length >= 3 &&
+      !["vitrine", "www", "localhost", "api"].includes(parts[0].toLowerCase())
+    ) {
+      return parts[0].toLowerCase();
+    }
+  }
+  return process.env.NEXT_PUBLIC_TENANT_SLUG || "grafica-modelo";
+};
+
 // Helper fetch wrapper
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getAuthToken();
-  const tenantSlug = process.env.NEXT_PUBLIC_TENANT_SLUG || "grafica-express";
+  const tenantSlug = getTenantSlug();
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
